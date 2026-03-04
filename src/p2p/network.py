@@ -58,19 +58,20 @@ class P2PNetwork:
             print(f"[P2P] Discovery failed from {bootstrap_peer}: {e}")
 
     def get_longest_chain(self) -> dict | None:
-        """Fetch chains from all peers and return the longest valid one."""
         best_chain = None
         best_length = 0
         for peer in self.peers:
             try:
                 response = requests.get(f"{peer.url}/chain", timeout=5)
+                print(f"[P2P] Chain from {peer}: status {response.status_code}")
                 chain_data = response.json()
+                print(f"[P2P] Chain length from {peer}: {chain_data.get('length', 0)}")
                 length = chain_data.get("length", 0)
                 if length > best_length:
                     best_length = length
                     best_chain = chain_data
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[P2P] Error fetching chain from {peer}: {e}")
         return best_chain
 
     def to_dict(self) -> dict:

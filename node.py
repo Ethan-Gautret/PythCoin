@@ -113,13 +113,29 @@ class Node:
             success, msg = self.add_transaction(tx, pub_key_pem, broadcast=False)
             return jsonify({"success": success, "message": msg})
 
+        # @app.route("/mine", methods=["POST"])
+        # def mine():
+        #     """Mine a new block from the current mempool."""
+        #     if not self.mempool:
+        #         return jsonify({"success": False, "message": "Mempool is empty"})
+        #     block = self.mine_block()
+        #     if block:
+        #         return jsonify({"success": True, "block": block.to_dict()})
+        #     return jsonify({"success": False, "message": "Mining failed"})
+
         @app.route("/mine", methods=["POST"])
         def mine():
-            """Mine a new block from the current mempool."""
-            if not self.mempool:
-                return jsonify({"success": False, "message": "Mempool is empty"})
-            block = self.mine_block()
-            if block:
+            data = request.json or {}
+            miner_addr = data.get("miner_address", self.wallet.address)
+
+            txs = list(self.mempool)
+            self.mempool.clear()
+
+            block = self.blockchain.mine_block(txs, miner_address=miner_addr)
+            if self.blockchain.add_block(block):
+                self.world_state.apply_block(block)
+                self.p2p.broadcast_block(block.to_dict())
+                print(f"[Node] Block mined and broadcast: #{block.index}")
                 return jsonify({"success": True, "block": block.to_dict()})
             return jsonify({"success": False, "message": "Mining failed"})
 
@@ -166,6 +182,11 @@ class Node:
         def contract_state(contract_id):
             state = self.world_state.get_contract_state(contract_id)
             return jsonify({"contract_id": contract_id, "state": state})
+
+        @app.route("/sync", methods=["POST"])
+        def sync():
+            self._sync_chain()
+            return jsonify({"success": True, "chain_length": len(self.blockchain)})
 
     def add_transaction(self, tx: Transaction, public_key_pem: str = "",
                         broadcast: bool = True) -> tuple[bool, str]:
@@ -240,17 +261,27 @@ class Node:
         """Sync chain with the network (longest chain rule)."""
         best = self.p2p.get_longest_chain()
         if not best:
+            print("[Sync] No chain received from peers")
             return
+
+        print(f"[Sync] Best chain length from peers: {best.get('length', 0)}, local: {len(self.blockchain)}")
+
         if best.get("length", 0) > len(self.blockchain):
             try:
-                candidate = Blockchain.from_dict({"difficulty": self.blockchain.difficulty, "chain": best["chain"]})
+                candidate = Blockchain.from_dict({
+                    "difficulty": self.blockchain.difficulty,
+                    "chain": best["chain"]
+                })
                 if candidate.validate_chain():
                     self.blockchain = candidate
                     self.world_state.rebuild_from_blockchain(self.blockchain)
                     print(f"[Sync] Chain updated to length {len(self.blockchain)}")
+                else:
+                    print("[Sync] Candidate chain is invalid")
             except Exception as e:
                 print(f"[Sync] Failed: {e}")
-
+        else:
+            print("[Sync] Already up to date")
     def start(self) -> None:
         """Start the Flask server."""
         self.app.run(host=self.host, port=self.port, debug=False)
