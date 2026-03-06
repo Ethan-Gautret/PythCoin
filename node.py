@@ -6,7 +6,8 @@ import argparse
 import json
 import threading
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 
 from src.crypto.crypto_utils import CryptoUtils
 from src.core.transaction import Transaction
@@ -44,6 +45,7 @@ class Node:
 
         # Flask app
         self.app = Flask(node_name)
+        CORS(self.app, resources={r"/*": {"origins": "*"}})
         self._register_routes()
 
         # Rebuild state from genesis
@@ -57,6 +59,11 @@ class Node:
 
     def _register_routes(self):
         app = self.app
+
+        @app.route("/dashboard")
+        def dashboard():
+            return send_from_directory('.', 'dashboard.html')
+
 
         @app.route("/status", methods=["GET"])
         def status():

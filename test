@@ -1,0 +1,5 @@
+{
+  "address": "0x426deb1d7030e8f8843ce83869059e83f5a059fd",
+  "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgj4pxsbAxi8rZTOdPYuCT\ng31dudbrSUXs7P5ADHnhqeKhRANCAAT48MAgW7HKvDg5pbw5qgbGaF/zPfXX8WgF\nQWmh3Ka9HZZyNe5QYPqucces35QG7flCzXaFKPv17Eq+utlGmY9K\n-----END PRIVATE KEY-----\n",
+  "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE+PDAIFuxyrw4OaW8OaoGxmhf8z311/Fo\nBUFpodymvR2WcjXuUGD6rnHHrN+UBu35Qs12hSj79exKvrrZRpmPSg==\n-----END PUBLIC KEY-----\n"
+}

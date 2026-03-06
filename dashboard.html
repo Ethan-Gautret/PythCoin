@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythCoin — Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1f35, #0d1628);
+            border-bottom: 1px solid #2a3a5c;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #4f8ef7, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header .logo { font-size: 2rem; }
+
+        .node-selector {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .node-selector label { color: #8899bb; font-size: 0.9rem; }
+
+        .node-selector input {
+            background: #1a2440;
+            border: 1px solid #2a3a5c;
+            border-radius: 8px;
+            color: #e0e6f0;
+            padding: 8px 12px;
+            width: 220px;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: calc(100vh - 70px);
+        }
+
+        nav {
+            background: #0d1628;
+            border-right: 1px solid #1a2a4a;
+            padding: 20px 0;
+        }
+
+        nav .section-title {
+            color: #4a5a7a;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 10px 20px 5px;
+        }
+
+        nav button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 20px;
+            background: none;
+            border: none;
+            color: #8899bb;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        nav button:hover { background: #1a2440; color: #e0e6f0; }
+        nav button.active { background: #1a2d50; color: #4f8ef7; border-right: 3px solid #4f8ef7; }
+        nav button .icon { font-size: 1.1rem; width: 20px; }
+
+        main {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #c0d0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #111827;
+            border: 1px solid #1e2d4a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card .label { color: #4a6a9a; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .card .value { font-size: 1.8rem; font-weight: 700; color: #4f8ef7; margin-top: 5px; }
+        .card .sub { font-size: 0.75rem; color: #4a5a7a; margin-top: 3px; }
+
+        .form-box {
+            background: #111827;
+            border: 1px solid #1e2d4a;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-box h3 {
+            font-size: 1rem;
+            color: #8899bb;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e2d4a;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.8rem; color: #6a7a9a; }
+
+        input, select, textarea {
+            background: #1a2440;
+            border: 1px solid #2a3a5c;
+            border-radius: 8px;
+            color: #e0e6f0;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4f8ef7;
+        }
+
+        textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: #2a52cc; color: white; }
+        .btn-primary:hover { background: #3a62dc; transform: translateY(-1px); }
+        .btn-success { background: #1a6b3a; color: #4dff9a; }
+        .btn-success:hover { background: #2a7b4a; }
+        .btn-warning { background: #7a4a00; color: #ffb84d; }
+        .btn-warning:hover { background: #8a5a10; }
+        .btn-danger { background: #6b1a1a; color: #ff6b6b; }
+        .btn-danger:hover { background: #7b2a2a; }
+        .btn-purple { background: #3a1a6b; color: #c084fc; }
+        .btn-purple:hover { background: #4a2a7b; }
+
+        .response-box {
+            background: #080e1a;
+            border: 1px solid #1a2a4a;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #64d97b;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 15px;
+        }
+
+        .response-box.error { color: #ff6b6b; }
+        .response-box.loading { color: #4f8ef7; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green { background: #0d3a1f; color: #4dff9a; }
+        .badge-red { background: #3a0d0d; color: #ff6b6b; }
+        .badge-blue { background: #0d1f3a; color: #4f8ef7; }
+
+        .chain-block {
+            background: #0d1628;
+            border: 1px solid #1e2d4a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .chain-block::before {
+            content: '▼';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #2a3a5c;
+            font-size: 0.8rem;
+        }
+
+        .chain-block:last-child::before { display: none; }
+
+        .chain-block .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chain-block .block-index {
+            font-weight: 700;
+            color: #4f8ef7;
+            font-size: 1rem;
+        }
+
+        .chain-block .block-hash {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #4a6a9a;
+            word-break: break-all;
+        }
+
+        .chain-block .block-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .chain-block .info-item { font-size: 0.78rem; }
+        .chain-block .info-item span { color: #4a6a9a; }
+
+        .peers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .peer-card {
+            background: #0d1628;
+            border: 1px solid #1e2d4a;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .peer-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4dff9a;
+            box-shadow: 0 0 6px #4dff9a;
+            flex-shrink: 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1e2d4a;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 8px 18px;
+            background: none;
+            border: none;
+            color: #4a6a9a;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .tab.active { color: #4f8ef7; border-bottom-color: #4f8ef7; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #2a3a5c;
+            border-top-color: #4f8ef7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+
+        .alert-success { background: #0d3a1f; border: 1px solid #1a6b3a; color: #4dff9a; }
+        .alert-error { background: #3a0d0d; border: 1px solid #6b1a1a; color: #ff6b6b; }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="logo">🪙</span>
+    <h1>PythCoin Dashboard</h1>
+    <div class="node-selector">
+        <label>Nœud :</label>
+        <input type="text" id="nodeUrl" value="http://127.0.0.1:5000" placeholder="http://127.0.0.1:5000" />
+        <button class="btn btn-primary" onclick="refreshStatus()">Connecter</button>
+    </div>
+</header>
+
+<div class="container">
+    <nav>
+        <div class="section-title">Général</div>
+        <button class="active" onclick="showPanel('status')"><span class="icon">📊</span> Statut</button>
+        <button onclick="showPanel('chain')"><span class="icon">⛓️</span> Blockchain</button>
+        <button onclick="showPanel('peers')"><span class="icon">🌐</span> Réseau P2P</button>
+
+        <div class="section-title">Transactions</div>
+        <button onclick="showPanel('mine')"><span class="icon">⛏️</span> Miner</button>
+        <button onclick="showPanel('transactions')"><span class="icon">💸</span> Transactions</button>
+        <button onclick="showPanel('balance')"><span class="icon">💰</span> Soldes</button>
+
+        <div class="section-title">Wallets</div>
+        <button onclick="showPanel('wallet')"><span class="icon">👛</span> Wallet</button>
+
+        <div class="section-title">Contrats</div>
+        <button onclick="showPanel('contracts')"><span class="icon">📜</span> Smart Contracts</button>
+
+        <div class="section-title">Outils</div>
+        <button onclick="showPanel('sync')"><span class="icon">🔄</span> Synchronisation</button>
+        <button onclick="showPanel('state')"><span class="icon">🗂️</span> État Global</button>
+    </nav>
+
+    <main>
+
+        <!-- STATUT -->
+        <div id="panel-status" class="panel active">
+            <h2>📊 Statut du nœud</h2>
+            <div class="cards" id="statusCards">
+                <div class="card"><div class="label">Nœud</div><div class="value" id="s-node">—</div></div>
+                <div class="card"><div class="label">Longueur chaîne</div><div class="value" id="s-chain">—</div></div>
+                <div class="card"><div class="label">Mempool</div><div class="value" id="s-mempool">—</div><div class="sub">transactions en attente</div></div>
+                <div class="card"><div class="label">Pairs connectés</div><div class="value" id="s-peers">—</div></div>
+            </div>
+            <div class="form-box">
+                <h3>Adresse du nœud</h3>
+                <div style="font-family:monospace; font-size:0.85rem; color:#4f8ef7; word-break:break-all;" id="s-address">—</div>
+            </div>
+            <button class="btn btn-primary" onclick="refreshStatus()">🔄 Actualiser</button>
+        </div>
+
+        <!-- BLOCKCHAIN -->
+        <div id="panel-chain" class="panel">
+            <h2>⛓️ Blockchain</h2>
+            <button class="btn btn-primary" onclick="loadChain()" style="margin-bottom:20px">🔄 Charger la chaîne</button>
+            <div id="chainContainer"></div>
+        </div>
+
+        <!-- PEERS -->
+        <div id="panel-peers" class="panel">
+            <h2>🌐 Réseau P2P</h2>
+            <div class="form-box">
+                <h3>Ajouter un pair</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Adresse</label>
+                        <input type="text" id="peerAddress" value="127.0.0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label>Port</label>
+                        <input type="number" id="peerPort" value="5001" />
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addPeer()">➕ Ajouter</button>
+                <div class="response-box" id="peerResponse" style="display:none"></div>
+            </div>
+            <h3 style="margin-bottom:15px; color:#8899bb;">Pairs connus</h3>
+            <div class="peers-grid" id="peersGrid"></div>
+            <button class="btn btn-primary" onclick="loadPeers()" style="margin-top:15px">🔄 Actualiser</button>
+        </div>
+
+        <!-- MINER -->
+        <div id="panel-mine" class="panel">
+            <h2>⛏️ Miner un bloc</h2>
+            <div class="form-box">
+                <h3>Paramètres de minage</h3>
+                <div class="form-group" style="margin-bottom:15px">
+                    <label>Adresse du mineur (optionnel)</label>
+                    <input type="text" id="minerAddress" placeholder="0x... (laisser vide pour utiliser l'adresse du nœud)" />
+                </div>
+                <button class="btn btn-warning" onclick="mineBlock()">⛏️ Lancer le minage</button>
+                <div class="response-box" id="mineResponse" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- TRANSACTIONS -->
+        <div id="panel-transactions" class="panel">
+            <h2>💸 Nouvelle transaction</h2>
+            <div class="form-box">
+                <h3>Créer une transaction</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expéditeur (sender)</label>
+                        <input type="text" id="txSender" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label>Destinataire (receiver)</label>
+                        <input type="text" id="txReceiver" placeholder="0x... ou contract-id" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Montant</label>
+                        <input type="number" id="txAmount" value="0" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nonce</label>
+                        <input type="number" id="txNonce" value="0" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:15px">
+                    <label>Data JSON (optionnel — pour smart contracts)</label>
+                    <textarea id="txData" placeholder='{"action": "increment"}'></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:15px">
+                    <label>Signature (laisser vide si non signé)</label>
+                    <input type="text" id="txSignature" placeholder="" />
+                </div>
+                <button class="btn btn-success" onclick="sendTransaction()">📤 Envoyer</button>
+                <div class="response-box" id="txResponse" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- BALANCE -->
+        <div id="panel-balance" class="panel">
+            <h2>💰 Solde d'une adresse</h2>
+            <div class="form-box">
+                <h3>Consulter un solde</h3>
+                <div class="form-group" style="margin-bottom:15px">
+                    <label>Adresse</label>
+                    <input type="text" id="balanceAddress" placeholder="0x..." />
+                </div>
+                <button class="btn btn-primary" onclick="getBalance()">🔍 Consulter</button>
+                <div class="response-box" id="balanceResponse" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- WALLET -->
+        <div id="panel-wallet" class="panel">
+            <h2>👛 Wallet</h2>
+            <div class="form-box">
+                <h3>Générer un nouveau wallet</h3>
+                <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">Génère une paire de clés EC SECP256K1 et dérive l'adresse.</p>
+                <button class="btn btn-purple" onclick="generateWallet()">🔑 Générer</button>
+            </div>
+            <div id="walletResult" style="display:none">
+                <div class="form-box">
+                    <h3>Wallet généré</h3>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label>Adresse</label>
+                        <input type="text" id="wAddress" readonly style="cursor:pointer" onclick="this.select()" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label>Clé publique (PEM)</label>
+                        <textarea id="wPublicKey" readonly rows="4" style="cursor:pointer; font-size:0.72rem" onclick="this.select()"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Clé privée (PEM) — ⚠️ Ne pas partager</label>
+                        <textarea id="wPrivateKey" readonly rows="6" style="cursor:pointer; font-size:0.72rem; color:#ff9944" onclick="this.select()"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMART CONTRACTS -->
+        <div id="panel-contracts" class="panel">
+            <h2>📜 Smart Contracts</h2>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('deploy')">Déployer</button>
+                <button class="tab" onclick="showTab('call')">Appeler</button>
+                <button class="tab" onclick="showTab('read')">Lire l'état</button>
+            </div>
+
+            <div id="tab-deploy" class="tab-content active">
+                <div class="form-box">
+                    <h3>Type de contrat</h3>
+                    <div class="form-group" style="margin-bottom:15px">
+                        <label>Type</label>
+                        <select id="contractType" onchange="updateContractForm()">
+                            <option value="counter">Counter — Compteur</option>
+                            <option value="escrow">Escrow — Dépôt conditionnel</option>
+                            <option value="conditional_transfer">Conditional Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID du contrat</label>
+                            <input type="text" id="contractId" placeholder="counter-1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Owner (adresse)</label>
+                            <input type="text" id="contractOwner" placeholder="0x..." />
+                        </div>
+                    </div>
+                    <div id="contractExtraFields"></div>
+                    <button class="btn btn-purple" onclick="deployContract()" style="margin-top:10px">🚀 Déployer</button>
+                    <div class="response-box" id="deployResponse" style="display:none"></div>
+                </div>
+            </div>
+
+            <div id="tab-call" class="tab-content">
+                <div class="form-box">
+                    <h3>Appeler un contrat</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID du contrat (receiver)</label>
+                            <input type="text" id="callContractId" placeholder="counter-1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Sender</label>
+                            <input type="text" id="callSender" placeholder="0x..." />
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px">
+                        <label>Action (data JSON)</label>
+                        <textarea id="callData" placeholder='{"action": "increment"}'></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px">
+                        <label>Nonce</label>
+                        <input type="number" id="callNonce" value="0" />
+                    </div>
+                    <button class="btn btn-success" onclick="callContract()">▶️ Exécuter</button>
+                    <div class="response-box" id="callResponse" style="display:none"></div>
+                </div>
+            </div>
+
+            <div id="tab-read" class="tab-content">
+                <div class="form-box">
+                    <h3>Lire l'état d'un contrat</h3>
+                    <div class="form-group" style="margin-bottom:15px">
+                        <label>ID du contrat</label>
+                        <input type="text" id="readContractId" placeholder="counter-1" />
+                    </div>
+                    <button class="btn btn-primary" onclick="readContract()">🔍 Lire</button>
+                    <div class="response-box" id="readResponse" style="display:none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYNC -->
+        <div id="panel-sync" class="panel">
+            <h2>🔄 Synchronisation</h2>
+            <div class="form-box">
+                <h3>Forcer la synchronisation</h3>
+                <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">
+                    Applique la règle de la chaîne la plus longue — le nœud adopte
+                    la chaîne la plus longue parmi ses pairs.
+                </p>
+                <button class="btn btn-primary" onclick="syncNode()">🔄 Synchroniser ce nœud</button>
+                <div class="response-box" id="syncResponse" style="display:none"></div>
+            </div>
+            <div class="form-box" style="margin-top:20px">
+                <h3>Synchroniser tous les nœuds connus</h3>
+                <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">
+                    Envoie une requête /sync à chaque pair connu.
+                </p>
+                <button class="btn btn-warning" onclick="syncAllPeers()">🔄 Sync tous les pairs</button>
+                <div class="response-box" id="syncAllResponse" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- STATE -->
+        <div id="panel-state" class="panel">
+            <h2>🗂️ État Global (WorldState)</h2>
+            <button class="btn btn-primary" onclick="loadState()" style="margin-bottom:20px">🔄 Charger l'état</button>
+            <div class="response-box" id="stateResponse" style="display:none"></div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    function getUrl() {
+        return document.getElementById('nodeUrl').value.replace(/\/$/, '');
+    }
+
+    async function api(method, path, body = null) {
+        const opts = {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+        };
+        if (body) opts.body = JSON.stringify(body);
+        try {
+            const r = await fetch(getUrl() + path, opts);
+            return await r.json();
+        } catch (e) {
+            return { error: e.message };
+        }
+    }
+
+    function showResponse(id, data, isError = false) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.className = 'response-box' + (isError || data.error ? ' error' : '');
+        el.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function showPanel(name) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function showTab(name) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    async function refreshStatus() {
+        const data = await api('GET', '/status');
+        if (data.error) { alert('Impossible de joindre le nœud : ' + data.error); return; }
+        document.getElementById('s-node').textContent = data.node || '—';
+        document.getElementById('s-chain').textContent = data.chain_length ?? '—';
+        document.getElementById('s-mempool').textContent = data.mempool_size ?? '—';
+        document.getElementById('s-peers').textContent = data.peers ?? '—';
+        document.getElementById('s-address').textContent = data.address || '—';
+    }
+
+    async function loadChain() {
+        const data = await api('GET', '/chain');
+        const container = document.getElementById('chainContainer');
+        if (data.error) { container.innerHTML = `<div class="alert alert-error">${data.error}</div>`; return; }
+        const blocks = [...(data.chain || [])].reverse();
+        container.innerHTML = blocks.map(b => `
+            <div class="chain-block">
+                <div class="block-header">
+                    <span class="block-index"># ${b.index}</span>
+                    <span class="badge badge-blue">${b.transactions?.length || 0} tx</span>
+                    <span class="badge badge-green">nonce: ${b.nonce}</span>
+                </div>
+                <div class="block-hash">🔗 ${b.hash}</div>
+                <div class="block-info">
+                    <div class="info-item"><span>Merkle root: </span>${(b.merkle_root || '').substring(0, 20)}...</div>
+                    <div class="info-item"><span>Prev: </span>${(b.previous_hash || '').substring(0, 20)}...</div>
+                    <div class="info-item"><span>Date: </span>${new Date(b.timestamp * 1000).toLocaleString()}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function loadPeers() {
+        const data = await api('GET', '/peers');
+        const grid = document.getElementById('peersGrid');
+        if (!data.peers || data.peers.length === 0) {
+            grid.innerHTML = '<p style="color:#4a5a7a">Aucun pair connu.</p>'; return;
+        }
+        grid.innerHTML = data.peers.map(p => `
+            <div class="peer-card">
+                <div class="peer-dot"></div>
+                <div>
+                    <div style="font-weight:600">${p.address}:${p.port}</div>
+                    <div style="font-size:0.75rem; color:#4a6a9a">En ligne</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function addPeer() {
+        const address = document.getElementById('peerAddress').value;
+        const port = parseInt(document.getElementById('peerPort').value);
+        const data = await api('POST', '/peers/add', { address, port });
+        showResponse('peerResponse', data);
+        loadPeers();
+    }
+
+    async function mineBlock() {
+        const miner = document.getElementById('minerAddress').value;
+        const body = miner ? { miner_address: miner } : {};
+        const el = document.getElementById('mineResponse');
+        el.style.display = 'block';
+        el.className = 'response-box loading';
+        el.textContent = '⛏️ Minage en cours...';
+        const data = await api('POST', '/mine', body);
+        showResponse('mineResponse', data, !data.success);
+        refreshStatus();
+    }
+
+    async function sendTransaction() {
+        let data_field = {};
+        const raw = document.getElementById('txData').value.trim();
+        if (raw) { try { data_field = JSON.parse(raw); } catch(e) { alert('JSON invalide dans Data'); return; } }
+        const body = {
+            id: 'tx-' + Date.now(),
+            sender: document.getElementById('txSender').value,
+            receiver: document.getElementById('txReceiver').value,
+            amount: parseFloat(document.getElementById('txAmount').value),
+            nonce: parseInt(document.getElementById('txNonce').value),
+            data: data_field,
+            signature: document.getElementById('txSignature').value || '',
+        };
+        const data = await api('POST', '/transactions/new', body);
+        showResponse('txResponse', data, !data.success);
+        refreshStatus();
+    }
+
+    async function getBalance() {
+        const address = document.getElementById('balanceAddress').value;
+        if (!address) { alert('Entrez une adresse'); return; }
+        const data = await api('GET', '/balance/' + address);
+        showResponse('balanceResponse', data);
+    }
+
+async function generateWallet() {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(20));
+    const addr = '0x' + [...randomBytes].map(b => b.toString(16).padStart(2,'0')).join('');
+    document.getElementById('wAddress').value = addr;
+    document.getElementById('wPublicKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
+    document.getElementById('wPrivateKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
+    document.getElementById('walletResult').style.display = 'block';
+}
+
+    function updateContractForm() {
+        const type = document.getElementById('contractType').value;
+        const extra = document.getElementById('contractExtraFields');
+        if (type === 'escrow') {
+            extra.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group"><label>Buyer</label><input type="text" id="cBuyer" placeholder="0x..." /></div>
+                    <div class="form-group"><label>Seller</label><input type="text" id="cSeller" placeholder="0x..." /></div>
+                    <div class="form-group"><label>Montant</label><input type="number" id="cAmount" value="50" /></div>
+                </div>`;
+        } else if (type === 'conditional_transfer') {
+            extra.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group"><label>Sender</label><input type="text" id="cSender" placeholder="0x..." /></div>
+                    <div class="form-group"><label>Receiver</label><input type="text" id="cReceiver" placeholder="0x..." /></div>
+                    <div class="form-group"><label>Montant</label><input type="number" id="cAmount2" value="100" /></div>
+                    <div class="form-group"><label>Approbations requises</label><input type="number" id="cApprovals" value="2" /></div>
+                </div>`;
+        } else {
+            extra.innerHTML = '';
+        }
+    }
+
+    async function deployContract() {
+        const type = document.getElementById('contractType').value;
+        const body = {
+            type,
+            id: document.getElementById('contractId').value,
+            owner: document.getElementById('contractOwner').value,
+        };
+        if (type === 'escrow') {
+            body.buyer = document.getElementById('cBuyer')?.value;
+            body.seller = document.getElementById('cSeller')?.value;
+            body.amount = parseFloat(document.getElementById('cAmount')?.value || 50);
+        } else if (type === 'conditional_transfer') {
+            body.sender = document.getElementById('cSender')?.value;
+            body.receiver = document.getElementById('cReceiver')?.value;
+            body.amount = parseFloat(document.getElementById('cAmount2')?.value || 100);
+            body.required_approvals = parseInt(document.getElementById('cApprovals')?.value || 2);
+        }
+        const data = await api('POST', '/contracts/deploy', body);
+        showResponse('deployResponse', data, !data.success);
+    }
+
+    async function callContract() {
+        let callData = {};
+        const raw = document.getElementById('callData').value.trim();
+        if (raw) { try { callData = JSON.parse(raw); } catch(e) { alert('JSON invalide'); return; } }
+        const body = {
+            id: 'tx-' + Date.now(),
+            sender: document.getElementById('callSender').value,
+            receiver: document.getElementById('callContractId').value,
+            amount: 0,
+            nonce: parseInt(document.getElementById('callNonce').value),
+            data: callData,
+            signature: '',
+        };
+        const data = await api('POST', '/transactions/new', body);
+        showResponse('callResponse', data, !data.success);
+    }
+
+    async function readContract() {
+        const id = document.getElementById('readContractId').value;
+        if (!id) { alert('Entrez un ID de contrat'); return; }
+        const data = await api('GET', '/contracts/' + id);
+        showResponse('readResponse', data);
+    }
+
+    async function syncNode() {
+        const el = document.getElementById('syncResponse');
+        el.style.display = 'block';
+        el.className = 'response-box loading';
+        el.textContent = '🔄 Synchronisation en cours...';
+        const data = await api('POST', '/sync', {});
+        showResponse('syncResponse', data);
+        refreshStatus();
+    }
+
+    async function syncAllPeers() {
+        const peers = await api('GET', '/peers');
+        const results = {};
+        for (const p of (peers.peers || [])) {
+            try {
+                const r = await fetch(`http://${p.address}:${p.port}/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                results[`${p.address}:${p.port}`] = await r.json();
+            } catch(e) {
+                results[`${p.address}:${p.port}`] = { error: e.message };
+            }
+        }
+        showResponse('syncAllResponse', results);
+    }
+
+    async function loadState() {
+        const data = await api('GET', '/state');
+        showResponse('stateResponse', data);
+    }
+
+    // Init
+    refreshStatus();
+    loadPeers();
+</script>
+</body>
+</html>
