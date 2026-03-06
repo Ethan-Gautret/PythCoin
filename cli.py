@@ -344,6 +344,25 @@ def create_wallet():
         print(f"  ✅ Sauvegardé dans {filename}")
 
     input("\nAppuyez sur Entrée pour continuer...")
+
+    def list_wallets():
+        print_header()
+        print("\n👛 WALLETS CONNUS\n")
+        data = api("GET", "/wallets")
+        if "error" in data:
+            print(f"  ❌ {data['error']}")
+        else:
+            wallets = data.get("wallets", [])
+            if not wallets:
+                print("  Aucun wallet trouvé dans la blockchain.")
+            else:
+                print(f"  {data['count']} wallet(s) trouvé(s) :\n")
+                print_separator()
+                for w in wallets:
+                    print(f"  👛 {w['address']}")
+                    print(f"     Solde : {w['balance']} coins")
+                    print()
+        input("Appuyez sur Entrée pour continuer...")
 # ─── MENU PRINCIPAL ───────────────────────────────
 
 def main():
@@ -360,6 +379,7 @@ def main():
         print("  [8]  📜  Smart Contracts")
         print("  [9]  🗂️   État global")
         print("  [w]  👛  Créer un wallet")  # ← ajouter cette ligne
+        print("  [l]  📋  Lister les wallets")
         print("  [c]  ⚙️   Changer de nœud")
         print("  [q]  ❌  Quitter")
         print()
@@ -375,7 +395,8 @@ def main():
         elif choice == "7": sync()
         elif choice == "8": smart_contracts()
         elif choice == "9": world_state()
-        elif choice == "w": create_wallet()  # ← ajouter cette ligne
+        elif choice == "w": create_wallet()
+        elif choice == "l": list_wallets()
         elif choice == "c": set_node()
         elif choice == "q":
             print("\n  👋 Au revoir !\n")

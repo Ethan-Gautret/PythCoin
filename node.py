@@ -129,6 +129,26 @@ class Node:
         #     if block:
         #         return jsonify({"success": True, "block": block.to_dict()})
         #     return jsonify({"success": False, "message": "Mining failed"})
+        @app.route("/wallets", methods=["GET"])
+        def get_wallets():
+            """Retourne toutes les adresses qui ont eu des transactions."""
+            addresses = set()
+            for block in self.blockchain.chain:
+                for tx in block.transactions:
+                    if hasattr(tx, 'sender') and tx.sender != "COINBASE":
+                        addresses.add(tx.sender)
+                    if hasattr(tx, 'receiver'):
+                        addresses.add(tx.receiver)
+
+            wallets = []
+            for addr in addresses:
+                wallets.append({
+                    "address": addr,
+                    "balance": self.world_state.get_balance(addr)
+                })
+
+            return jsonify({"wallets": wallets, "count": len(wallets)})
+
 
         @app.route("/mine", methods=["POST"])
         def mine():
@@ -194,6 +214,14 @@ class Node:
         def sync():
             self._sync_chain()
             return jsonify({"success": True, "chain_length": len(self.blockchain)})
+
+        @app.route("/wallet", methods=["GET"])
+        def get_wallet():
+            return jsonify({
+            "address": self.wallet.address,
+            "public_key_pem": self.wallet.public_key_pem,
+            "private_key_pem": self.wallet.private_key_pem,
+        })
 
     def add_transaction(self, tx: Transaction, public_key_pem: str = "",
                         broadcast: bool = True) -> tuple[bool, str]:

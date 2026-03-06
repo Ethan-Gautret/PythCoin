@@ -389,7 +389,7 @@
                 <div class="card"><div class="label">Nœud</div><div class="value" id="s-node">—</div></div>
                 <div class="card"><div class="label">Longueur chaîne</div><div class="value" id="s-chain">—</div></div>
                 <div class="card"><div class="label">Mempool</div><div class="value" id="s-mempool">—</div><div class="sub">transactions en attente</div></div>
-                <div class="card"><div class="label">Pairs connectés</div><div class="value" id="s-peers">—</div></div>
+                <div class="card"><div class="label">peer connectés</div><div class="value" id="s-peers">—</div></div>
             </div>
             <div class="form-box">
                 <h3>Adresse du nœud</h3>
@@ -409,7 +409,7 @@
         <div id="panel-peers" class="panel">
             <h2>🌐 Réseau P2P</h2>
             <div class="form-box">
-                <h3>Ajouter un pair</h3>
+                <h3>Ajouter un peer</h3>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Adresse</label>
@@ -423,7 +423,7 @@
                 <button class="btn btn-primary" onclick="addPeer()">➕ Ajouter</button>
                 <div class="response-box" id="peerResponse" style="display:none"></div>
             </div>
-            <h3 style="margin-bottom:15px; color:#8899bb;">Pairs connus</h3>
+            <h3 style="margin-bottom:15px; color:#8899bb;">peer connus</h3>
             <div class="peers-grid" id="peersGrid"></div>
             <button class="btn btn-primary" onclick="loadPeers()" style="margin-top:15px">🔄 Actualiser</button>
         </div>
@@ -494,12 +494,12 @@
             </div>
         </div>
 
-        <!-- WALLET -->
+<!-- WALLET -->
         <div id="panel-wallet" class="panel">
             <h2>👛 Wallet</h2>
             <div class="form-box">
                 <h3>Générer un nouveau wallet</h3>
-                <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">Génère une paire de clés EC SECP256K1 et dérive l'adresse.</p>
+                <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">Génère une peere de clés EC SECP256K1 et dérive l'adresse.</p>
                 <button class="btn btn-purple" onclick="generateWallet()">🔑 Générer</button>
             </div>
             <div id="walletResult" style="display:none">
@@ -519,6 +519,14 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ↓ AJOUTER ICI ↓ -->
+            <div class="form-box" style="margin-top:20px">
+                <h3>Wallets dans la blockchain</h3>
+                <button class="btn btn-primary" onclick="listWallets()">📋 Charger</button>
+                <div id="walletsList" style="margin-top:15px"></div>
+            </div>
+
         </div>
 
         <!-- SMART CONTRACTS -->
@@ -604,7 +612,7 @@
                 <h3>Forcer la synchronisation</h3>
                 <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">
                     Applique la règle de la chaîne la plus longue — le nœud adopte
-                    la chaîne la plus longue parmi ses pairs.
+                    la chaîne la plus longue parmi ses peer.
                 </p>
                 <button class="btn btn-primary" onclick="syncNode()">🔄 Synchroniser ce nœud</button>
                 <div class="response-box" id="syncResponse" style="display:none"></div>
@@ -612,9 +620,9 @@
             <div class="form-box" style="margin-top:20px">
                 <h3>Synchroniser tous les nœuds connus</h3>
                 <p style="color:#4a6a9a; font-size:0.85rem; margin-bottom:15px">
-                    Envoie une requête /sync à chaque pair connu.
+                    Envoie une requête /sync à chaque peer connu.
                 </p>
-                <button class="btn btn-warning" onclick="syncAllPeers()">🔄 Sync tous les pairs</button>
+                <button class="btn btn-warning" onclick="syncAllPeers()">🔄 Sync tous les peer</button>
                 <div class="response-box" id="syncAllResponse" style="display:none"></div>
             </div>
         </div>
@@ -701,11 +709,29 @@
         `).join('');
     }
 
+    async function listWallets() {
+    const data = await api('GET', '/wallets');
+    const container = document.getElementById('walletsList');
+    if (!data.wallets || data.wallets.length === 0) {
+        container.innerHTML = '<p style="color:#4a5a7a">Aucun wallet dans la blockchain.</p>';
+        return;
+    }
+    container.innerHTML = data.wallets.map(w => `
+        <div class="peer-card" style="margin-bottom:10px">
+            <div class="peer-dot"></div>
+            <div>
+                <div style="font-family:monospace; font-size:0.82rem">${w.address}</div>
+                <div style="font-size:0.8rem; color:#4dff9a">${w.balance} coins</div>
+            </div>
+        </div>
+    `).join('');
+}
+
     async function loadPeers() {
         const data = await api('GET', '/peers');
         const grid = document.getElementById('peersGrid');
         if (!data.peers || data.peers.length === 0) {
-            grid.innerHTML = '<p style="color:#4a5a7a">Aucun pair connu.</p>'; return;
+            grid.innerHTML = '<p style="color:#4a5a7a">Aucun peer connu.</p>'; return;
         }
         grid.innerHTML = data.peers.map(p => `
             <div class="peer-card">
@@ -763,14 +789,27 @@
         showResponse('balanceResponse', data);
     }
 
-async function generateWallet() {
-    const randomBytes = crypto.getRandomValues(new Uint8Array(20));
-    const addr = '0x' + [...randomBytes].map(b => b.toString(16).padStart(2,'0')).join('');
-    document.getElementById('wAddress').value = addr;
-    document.getElementById('wPublicKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
-    document.getElementById('wPrivateKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
+// async function generateWallet() {
+//     const randomBytes = crypto.getRandomValues(new Uint8Array(20));
+//     const addr = '0x' + [...randomBytes].map(b => b.toString(16).padStart(2,'0')).join('');
+//     document.getElementById('wAddress').value = addr;
+//     document.getElementById('wPublicKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
+//     document.getElementById('wPrivateKey').value = 'Utiliser demo.py pour générer de vraies clés EC SECP256K1';
+//     document.getElementById('walletResult').style.display = 'block';
+// }
+
+    async function generateWallet() {
+    const data = await api('GET', '/wallet');
+    if (data.error) {
+        alert('Erreur : ' + data.error);
+        return;
+    }
+    document.getElementById('wAddress').value = data.address;
+    document.getElementById('wPublicKey').value = data.public_key_pem;
+    document.getElementById('wPrivateKey').value = data.private_key_pem;
     document.getElementById('walletResult').style.display = 'block';
 }
+
 
     function updateContractForm() {
         const type = document.getElementById('contractType').value;
