@@ -223,6 +223,27 @@ class Node:
             "private_key_pem": self.wallet.private_key_pem,
         })
 
+        @app.route("/nonce/<address>", methods=["GET"])
+        def get_nonce(address):
+            nonce = self._nonces.get(address, 0)
+            return jsonify({"address": address, "next_nonce": nonce})
+
+        @app.route("/transactions/sign", methods=["POST"])
+        def sign_transaction():
+            """Signe une transaction avec le wallet du nœud."""
+            data = request.json
+            tx = Transaction(
+                sender=self.wallet.address,
+                receiver=data["receiver"],
+                amount=data["amount"],
+                nonce=self._nonces.get(self.wallet.address, 0),
+                data=data.get("data", {})
+            )
+            tx.sign(self.wallet._private_key)
+            payload = tx.to_full_dict()
+            payload["public_key_pem"] = self.wallet.public_key_pem
+            return jsonify(payload)
+
     def add_transaction(self, tx: Transaction, public_key_pem: str = "",
                         broadcast: bool = True) -> tuple[bool, str]:
         """Validate and add a transaction to the mempool."""

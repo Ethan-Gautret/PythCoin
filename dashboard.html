@@ -443,42 +443,105 @@
         </div>
 
         <!-- TRANSACTIONS -->
+<!--        <div id="panel-transactions" class="panel">-->
+<!--            <h2>💸 Nouvelle transaction</h2>-->
+<!--            <div class="form-box">-->
+<!--                <h3>Créer une transaction</h3>-->
+<!--                <div class="form-row">-->
+<!--                    <div class="form-group">-->
+<!--                        <label>Expéditeur (sender)</label>-->
+<!--                        <input type="text" id="txSender" placeholder="0x..." />-->
+<!--                    </div>-->
+<!--                    <div class="form-group">-->
+<!--                        <label>Destinataire (receiver)</label>-->
+<!--                        <input type="text" id="txReceiver" placeholder="0x... ou contract-id" />-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                    <div class="form-group">-->
+<!--                        <label>Montant</label>-->
+<!--                        <input type="number" id="txAmount" value="0" step="0.01" />-->
+<!--                    </div>-->
+<!--                    <div class="form-group">-->
+<!--                        <label>Nonce</label>-->
+<!--                        <input type="number" id="txNonce" value="0" />-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="form-group" style="margin-bottom:15px">-->
+<!--                    <label>Data JSON (optionnel — pour smart contracts)</label>-->
+<!--                    <textarea id="txData" placeholder='{"action": "increment"}'></textarea>-->
+<!--                </div>-->
+<!--                <div class="form-group" style="margin-bottom:15px">-->
+<!--                    <label>Signature (laisser vide si non signé)</label>-->
+<!--                    <input type="text" id="txSignature" placeholder="" />-->
+<!--                </div>-->
+<!--                <button class="btn btn-success" onclick="sendTransaction()">📤 Envoyer</button>-->
+<!--                <div class="response-box" id="txResponse" style="display:none"></div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+
         <div id="panel-transactions" class="panel">
-            <h2>💸 Nouvelle transaction</h2>
-            <div class="form-box">
-                <h3>Créer une transaction</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Expéditeur (sender)</label>
-                        <input type="text" id="txSender" placeholder="0x..." />
-                    </div>
-                    <div class="form-group">
-                        <label>Destinataire (receiver)</label>
-                        <input type="text" id="txReceiver" placeholder="0x... ou contract-id" />
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Montant</label>
-                        <input type="number" id="txAmount" value="0" step="0.01" />
-                    </div>
-                    <div class="form-group">
-                        <label>Nonce</label>
-                        <input type="number" id="txNonce" value="0" />
-                    </div>
-                </div>
-                <div class="form-group" style="margin-bottom:15px">
-                    <label>Data JSON (optionnel — pour smart contracts)</label>
-                    <textarea id="txData" placeholder='{"action": "increment"}'></textarea>
-                </div>
-                <div class="form-group" style="margin-bottom:15px">
-                    <label>Signature (laisser vide si non signé)</label>
-                    <input type="text" id="txSignature" placeholder="" />
-                </div>
-                <button class="btn btn-success" onclick="sendTransaction()">📤 Envoyer</button>
-                <div class="response-box" id="txResponse" style="display:none"></div>
+    <h2>💸 Nouvelle transaction</h2>
+    <div class="form-box">
+        <h3>Expéditeur</h3>
+        <button class="btn btn-purple" onclick="loadSenderWallet()" style="margin-bottom:15px">
+            👛 Charger mon wallet (nœud actuel)
+        </button>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Adresse expéditeur</label>
+                <input type="text" id="txSender" placeholder="0x..." />
+            </div>
+            <div class="form-group">
+                <label>Nonce (auto)</label>
+                <input type="number" id="txNonce" value="0" />
             </div>
         </div>
+        <div class="form-group" style="margin-bottom:15px">
+            <label>Clé publique expéditeur (PEM)</label>
+            <textarea id="txPublicKey" rows="3" placeholder="-----BEGIN PUBLIC KEY-----"></textarea>
+        </div>
+        <input type="hidden" id="txPrivateKeyHidden" />
+    </div>
+
+    <div class="form-box">
+        <h3>Destinataire</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Adresse destinataire</label>
+                <input type="text" id="txReceiver" placeholder="0x... (adresse d'un autre peer)" />
+            </div>
+            <div class="form-group">
+                <label>Montant</label>
+                <input type="number" id="txAmount" value="0" step="0.01" />
+            </div>
+        </div>
+        <p style="color:#4a6a9a; font-size:0.8rem; margin-top:5px">
+            💡 Pour envoyer à un autre peer, récupère son adresse via
+            <strong>http://127.0.0.1:500X/wallet</strong>
+        </p>
+    </div>
+
+    <div class="form-box">
+        <h3>Options avancées</h3>
+        <div class="form-group" style="margin-bottom:15px">
+            <label>Data JSON (pour smart contracts)</label>
+            <textarea id="txData" placeholder='{"action": "increment"}'></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:15px">
+            <label>Signature manuelle (optionnel)</label>
+            <input type="text" id="txSignature" placeholder="laisser vide pour auto" />
+        </div>
+        <div class="form-group" style="margin-bottom:15px">
+            <label>Nœud source (si différent)</label>
+            <input type="text" id="txSenderNode" placeholder="http://127.0.0.1:5000" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" onclick="sendTransaction()">📤 Envoyer la transaction</button>
+    <div class="response-box" id="txResponse" style="display:none"></div>
+</div>
 
         <!-- BALANCE -->
         <div id="panel-balance" class="panel">
@@ -764,23 +827,100 @@
         refreshStatus();
     }
 
+    // async function sendTransaction() {
+    //     let data_field = {};
+    //     const raw = document.getElementById('txData').value.trim();
+    //     if (raw) { try { data_field = JSON.parse(raw); } catch(e) { alert('JSON invalide dans Data'); return; } }
+    //     const body = {
+    //         id: 'tx-' + Date.now(),
+    //         sender: document.getElementById('txSender').value,
+    //         receiver: document.getElementById('txReceiver').value,
+    //         amount: parseFloat(document.getElementById('txAmount').value),
+    //         nonce: parseInt(document.getElementById('txNonce').value),
+    //         data: data_field,
+    //         signature: document.getElementById('txSignature').value || '',
+    //     };
+    //     const data = await api('POST', '/transactions/new', body);
+    //     showResponse('txResponse', data, !data.success);
+    //     refreshStatus();
+    // }
+
+//     async function sendTransaction() {
+//     // Récupérer la clé publique de l'expéditeur depuis le nœud source
+//     const senderNode = document.getElementById('txSenderNode').value || getUrl();
+//
+//     let data_field = {};
+//     const raw = document.getElementById('txData').value.trim();
+//     if (raw) {
+//         try { data_field = JSON.parse(raw); }
+//         catch(e) { alert('JSON invalide dans Data'); return; }
+//     }
+//
+//     // Récupérer le bon nonce automatiquement
+//     const sender = document.getElementById('txSender').value;
+//     let nonce = parseInt(document.getElementById('txNonce').value);
+//     try {
+//         const nonceData = await fetch(`${senderNode}/nonce/${sender}`).then(r => r.json());
+//         nonce = nonceData.next_nonce;
+//         document.getElementById('txNonce').value = nonce;
+//     } catch(e) {}
+//
+//     const body = {
+//         id: 'tx-' + Date.now(),
+//         sender: sender,
+//         receiver: document.getElementById('txReceiver').value,
+//         amount: parseFloat(document.getElementById('txAmount').value),
+//         nonce: nonce,
+//         data: data_field,
+//         signature: document.getElementById('txSignature').value || '',
+//         public_key_pem: document.getElementById('txPublicKey').value || '',
+//     };
+//     const data = await api('POST', '/transactions/new', body);
+//     showResponse('txResponse', data, !data.success);
+//     refreshStatus();
+// }
+
     async function sendTransaction() {
-        let data_field = {};
-        const raw = document.getElementById('txData').value.trim();
-        if (raw) { try { data_field = JSON.parse(raw); } catch(e) { alert('JSON invalide dans Data'); return; } }
-        const body = {
-            id: 'tx-' + Date.now(),
-            sender: document.getElementById('txSender').value,
-            receiver: document.getElementById('txReceiver').value,
-            amount: parseFloat(document.getElementById('txAmount').value),
-            nonce: parseInt(document.getElementById('txNonce').value),
-            data: data_field,
-            signature: document.getElementById('txSignature').value || '',
-        };
-        const data = await api('POST', '/transactions/new', body);
-        showResponse('txResponse', data, !data.success);
-        refreshStatus();
+    const receiver = document.getElementById('txReceiver').value;
+    const amount = parseFloat(document.getElementById('txAmount').value);
+    let data_field = {};
+    const raw = document.getElementById('txData').value.trim();
+    if (raw) {
+        try { data_field = JSON.parse(raw); }
+        catch(e) { alert('JSON invalide'); return; }
     }
+
+    // Étape 1 — Signer la transaction via le nœud
+    const signed = await api('POST', '/transactions/sign', {
+        receiver: receiver,
+        amount: amount,
+        data: data_field
+    });
+
+    if (signed.error) {
+        showResponse('txResponse', signed, true); return;
+    }
+
+    // Étape 2 — Envoyer la transaction signée
+    const result = await api('POST', '/transactions/new', signed);
+    showResponse('txResponse', result, !result.success);
+    refreshStatus();
+}
+
+async function loadSenderWallet() {
+    "Charger automatiquement le wallet du nœud actuel comme expéditeur."
+    const data = await api('GET', '/wallet');
+    if (data.error) { alert('Erreur : ' + data.error); return; }
+    document.getElementById('txSender').value = data.address;
+    document.getElementById('txPublicKey').value = data.public_key_pem;
+    document.getElementById('txPrivateKeyHidden').value = data.private_key_pem;
+
+    // Récupérer le nonce automatiquement
+    const nonceData = await api('GET', `/nonce/${data.address}`);
+    document.getElementById('txNonce').value = nonceData.next_nonce || 0;
+
+    console.log('Wallet chargé :', data.address);
+}
 
     async function getBalance() {
         const address = document.getElementById('balanceAddress').value;
@@ -788,6 +928,8 @@
         const data = await api('GET', '/balance/' + address);
         showResponse('balanceResponse', data);
     }
+
+
 
 // async function generateWallet() {
 //     const randomBytes = crypto.getRandomValues(new Uint8Array(20));
